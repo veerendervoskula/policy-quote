@@ -1,110 +1,102 @@
-import { createApp } from './app.js';
-import { logger } from './utils/logger.js';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult
+} from 'aws-lambda';
 
-// AWS Lambda handler for Node.js 18+ runtime
-// Compatible with API Gateway (REST API and HTTP API) and ALB
+import { QuoteRequestSchema } from './dto/QuoteRequest';
+import { RiskScoringService } from './services/RiskScoringService';
+import { logger } from './utils/logger';
+import { PremiumCalculationService } from './services/PremiumCalculationService';
 
-const app = createApp();
-
-/**
- * Lambda handler function for AWS Lambda Node.js runtime.
- * 
- * Supports:
- * - API Gateway HTTP API events
- * - API Gateway REST API events
- * - Application Load Balancer (ALB) events
- * 
- * The serverless middleware internally handles event format conversion.
- * 
- * @param event - AWS Lambda event (from API Gateway or ALB)
- * @param _context - AWS Lambda context (unused but required for Lambda signature)
- * @returns Response object with statusCode and body
- */
-export const handler = async (event: any, _context: any) => {
-  logger.info('Lambda handler invoked', {
-    path: event.path ?? event.rawPath,
-    method: event.httpMethod ?? event.requestContext?.http?.method
-  });
+export async function handler(
+event: APIGatewayProxyEvent, p0: any): Promise<APIGatewayProxyResult> {
 
   try {
-    // Convert Lambda event to Express-compatible request
-    const httpMethod = event.httpMethod ?? event.requestContext?.http?.method ?? 'GET';
-    const path = event.path ?? event.rawPath ?? '/';
-    const headers = event.headers ?? {};
-    const body = event.body ?? null;
-    const isBase64 = event.isBase64Encoded ?? false;
 
-    // Parse body if present
-    let bodyData: any = null;
-    if (body) {
-      try {
-        const decodedBody = isBase64 ? Buffer.from(body, 'base64').toString('utf-8') : body;
-        bodyData = JSON.parse(decodedBody);
-      } catch {
-        // Non-JSON body, treat as string
-        bodyData = body;
-      }
+    const payload = JSON.parse(
+      event.body ?? '{}'
+    );
+
+    const validated =
+      QuoteRequestSchema.safeParse(payload);
+
+    if (!validated.success) {
+
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid quote request',
+          details:
+            validated.error.flatten().fieldErrors
+        })
+      };
     }
 
-    // Create a minimal request object for Express
-    const mockReq: any = {
-      method: httpMethod,
-      path,
-      url: path,
-      headers,
-      body: bodyData,
-      query: event.queryStringParameters ?? {},
-      params: event.pathParameters ?? {}
-    };
+    const request = validated.data;
 
-    // Create a minimal response object
-    const responses: any[] = [];
-    const mockRes: any = {
+    const riskAssessment =
+      RiskScoringService.assessRisk(
+        request
+      );
+
+    const premium =
+      PremiumCalculationService.calculatePremium(
+        request.dwellingValue,
+        riskAssessment.riskBand
+      );
+
+    return {
       statusCode: 200,
-      headers: {},
-      body: '',
-      status: function (code: number) {
-        this.statusCode = code;
-        return this;
+      headers: {
+        'Content-Type': 'application/json'
       },
-      json: function (data: any) {
-        this.body = JSON.stringify(data);
-        this.headers['Content-Type'] = 'application/json';
-        responses.push(this);
-        return this;
-      },
-      send: function (data: any) {
-        this.body = data;
-        responses.push(this);
-        return this;
-      }
+      body: JSON.stringify({
+        annualPremium: premium.annualPremium,
+        monthlyPremium: premium.monthlyPremium,
+        riskScore: riskAssessment.totalScore,
+
+        riskBand:
+          riskAssessment.riskBand,
+
+        riskBreakdown: {
+          ageScore:
+            riskAssessment.ageScore,
+          claimsScore:
+            riskAssessment.claimsScore,
+          propertyScore:
+            riskAssessment.propertyScore
+        },
+
+        coverageDetails: {
+          buildingCover:
+            request.dwellingValue,
+          contentsCover: 75000,
+          accidentalDamage: true
+        }
+      })
     };
 
-    // Route through Express app
-    return new Promise((resolve, reject) => {
-      app(mockReq, mockRes, (err: any) => {
-        if (err) {
-          reject(err);
-        } else {
-          const response = responses[responses.length - 1] || mockRes;
-          resolve({
-            statusCode: response.statusCode,
-            headers: response.headers,
-            body: response.body,
-            isBase64Encoded: false
-          });
-        }
-      });
-    });
   } catch (error) {
-    logger.error('Lambda handler error', { error });
+
+    logger.error(
+      'Unexpected error',
+      error
+    );
+
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        code: 'LAMBDA_ERROR',
-        message: 'Internal server error'
+        code: 'INTERNAL_SERVER_ERROR',
+        message:
+          'An unexpected error occurred'
       })
     };
   }
-};
+}

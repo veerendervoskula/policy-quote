@@ -76,7 +76,7 @@ import { PremiumHistoryChartComponent } from './QuoteChartComponent';
             </div>
             <div class="detail-item">
               <span class="detail-label">Risk Multiplier</span>
-              <span class="detail-value">{{ quoteResult.coverageDetails.riskMultiplier | number: '1.0-2f' }}x</span>
+              <span class="detail-value">{{ quoteResult.coverageDetails.riskMultiplier | number: '1.0-2' }}x</span>
             </div>
           </div>
 
@@ -95,7 +95,7 @@ import { PremiumHistoryChartComponent } from './QuoteChartComponent';
               <h4>Applied Discounts</h4>
               <ul class="discounts-list">
                 @for (discount of quoteResult.coverageDetails.discounts; track discount.description) {
-                  <li>{{ discount.description }}: -{{ discount.percentage }}%</li>
+                  <li>{{ discount.description }}:- {{ discount.percentage }}%</li>
                 }
               </ul>
             </div>

@@ -5,7 +5,10 @@ import {
   ViewChild,
   input,
   effect,
-  computed
+  computed,
+  runInInjectionContext,
+  inject,
+  Injector
 } from '@angular/core';
 
 import {
@@ -50,12 +53,16 @@ export class PremiumHistoryChartComponent
 
   private chart?: Chart;
 
-  ngAfterViewInit(): void {
+  private injector = inject(Injector);
 
-    effect(() => {
-      this.renderChart();
+  ngAfterViewInit() {
+    runInInjectionContext(this.injector, () => {
+      effect(() => {
+        this.renderChart();
+      });
     });
   }
+
 
   private renderChart(): void {
 
@@ -99,7 +106,7 @@ export class PremiumHistoryChartComponent
     );
   }
 
-  private generatePremiumHistory( riskScore: number): PremiumHistoryPoint[] {
+  private generatePremiumHistory(riskScore: number): PremiumHistoryPoint[] {
 
     const result: PremiumHistoryPoint[] = [];
 
@@ -123,8 +130,8 @@ export class PremiumHistoryChartComponent
         coverageLoadFactor;
 
       result.push({
-       propertyValue: value,
-       annualPremium: Math.round(premium)
+        propertyValue: value,
+        annualPremium: Math.round(premium)
       });
     }
 
