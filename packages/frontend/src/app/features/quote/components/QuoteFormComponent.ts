@@ -1,9 +1,8 @@
-import { Component, Output, EventEmitter, signal, OnDestroy, effect, computed } from '@angular/core';
+import { Component, Output, EventEmitter, signal, effect, computed,  DestroyRef, inject  } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { PolicyQuoteApiService } from '../../../core/services/PolicyQuoteApiService';
 import { PolicyQuoteRequest } from '../../../core/models/PolicyQuoteRequest';
 import { PolicyQuoteResponse } from '../../../core/models/PolicyQuoteResponse';
@@ -25,7 +24,6 @@ import { PropertyTypes } from 'src/app/core/utils/constants';
  * - quoteResult: Quote result data
  * - errorMessage: Error message from API
  * 
- * Implements OnDestroy for proper subscription cleanup and memory leak prevention.
  */
 @Component({
   selector: 'app-quote-form',
@@ -249,7 +247,7 @@ import { PropertyTypes } from 'src/app/core/utils/constants';
     }
   `]
 })
-export class QuoteFormComponent implements OnDestroy {
+export class QuoteFormComponent {
   @Output() resultEmitted = new EventEmitter<PolicyQuoteResponse>();
   @Output() errorEmitted = new EventEmitter<string>();
 
@@ -259,7 +257,7 @@ export class QuoteFormComponent implements OnDestroy {
   errorMessage = signal<string | null>('');
   readonly propertyTypes = Object.values(PropertyTypes);
   readonly hasQuote = computed(() => this.quoteResult() !== null);
-  private destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(private fb: FormBuilder, private apiService: PolicyQuoteApiService) {
     this.quoteForm = this.fb.group({
@@ -284,15 +282,6 @@ export class QuoteFormComponent implements OnDestroy {
 
   }
 
-  /**
-   * Lifecycle hook: cleanup subscriptions when component is destroyed.
-   * Prevents memory leaks from pending API requests.
-   */
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   onSubmit(): void {
     if (this.quoteForm.invalid) {
       this.quoteForm.markAllAsTouched();
@@ -306,9 +295,8 @@ export class QuoteFormComponent implements OnDestroy {
     const quoteRequest: PolicyQuoteRequest = this.quoteForm.value;
 
     // Use takeUntil to automatically unsubscribe when component is destroyed
-    this.apiService.getQuote(quoteRequest).pipe(
-      takeUntil(this.destroy$)
-    )
+    this.apiService.getQuote(quoteRequest)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result: PolicyQuoteResponse) => {
           this.isLoading.set(false);

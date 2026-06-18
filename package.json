@@ -1,30 +1,16 @@
 {
-  "name": "policy-quote-root",
-  "version": "1.0.0",
-  "description": "PolicyQuote: Full-stack home insurance quoting application",
+  "name": "policy-quote",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "description": "PolicyQuote: Full-stack home insurance quoting application",
   "scripts": {
-    "start": "concurrently --kill-others \"npm:frontend:dev\" \"npm:backend:dev\"",
-    "dev:debug": "concurrently \"npm frontend:dev\" \"npm backend:dev --inspect\"",
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "backend:dev": "npm run dev -w policy-quote-backend",
-    "backend:build": "npm run build -w policy-quote-backend",
-    "backend:test": "npm run test -w policy-quote-backend",
-    "frontend:dev": "npm run start -w policy-quote-frontend",
-    "frontend:build": "npm run build:prod -w policy-quote-frontend",
-    "frontend:test": "npm run test -w policy-quote-frontend"
+    "start": "concurrently \"npm run start:api\" \"npm run start:web\"",
+    "start:web": "npm --prefix packages/frontend start",
+    "start:api": "npm --prefix packages/backend start",
+    "build": "concurrently npm run build:web && npm run build:api",
+    "build:web": "npm --prefix packages/frontend run build",
+    "build:api": "npm --prefix packages/backend run build"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
-  },
-  
-"resolutions": {
-  "rxjs": "7.8.1"
-}
-
+    "concurrently": "^9.2.3"
+  }
 }

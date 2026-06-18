@@ -1,4 +1,4 @@
-import { PropertyType } from "../utils/constants";
+import { PropertyTypes } from "../utils/constants";
 
 /**
  * QuoteRequest interface - Mirrors backend DTO.
@@ -7,7 +7,7 @@ import { PropertyType } from "../utils/constants";
 export interface PolicyQuoteRequest {
   name: string;
   age: number;
-  propertyType: PropertyType;
+  propertyType: PropertyTypes;
   dwellingValue: number;
   postcode: string;
   priorClaims: number;

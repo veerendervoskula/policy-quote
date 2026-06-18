@@ -1,6 +1,5 @@
 import { Component, effect, ElementRef, Input, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { CurrencyPipe } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { RiskBandBadgeComponent } from '../../../shared/components/RiskBandBadgeComponent';
 import { PolicyQuoteResponse } from '../../../core/models/PolicyQuoteResponse';
 import { renderChart } from './QuoteChartComponent';
@@ -20,7 +19,7 @@ import { renderChart } from './QuoteChartComponent';
 @Component({
   selector: 'app-quote-result',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, RiskBandBadgeComponent],
+  imports: [CommonModule, RiskBandBadgeComponent],
   template: `
     @if (quoteResult) {
       <div class="quote-result card">

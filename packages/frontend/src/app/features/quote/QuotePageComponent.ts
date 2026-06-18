@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { QuoteFormComponent } from './components/QuoteFormComponent';
 import { QuoteResultComponent } from './components/QuoteResultComponent';
-import { QuoteResponse } from '../../core/models/PolicyQuoteResponse';
+import { PolicyQuoteResponse } from '../../core/models/PolicyQuoteResponse';
 
 /**
  * QuotePageComponent - Main container for the quote flow.
@@ -120,7 +120,7 @@ import { QuoteResponse } from '../../core/models/PolicyQuoteResponse';
 })
 export class QuotePageComponent {
   showResult = signal(false);
-  quoteResult = signal<QuoteResponse | null>(null);
+  quoteResult = signal<PolicyQuoteResponse | null>(null);
   errorMessage = signal('');
 
   /**
@@ -135,7 +135,7 @@ export class QuotePageComponent {
    */
   shouldShowForm = computed(() => !this.showResult() || !this.quoteResult());
 
-  onQuoteResult(result: QuoteResponse): void {
+  onQuoteResult(result: PolicyQuoteResponse): void {
     this.quoteResult.set(result);
     this.showResult.set(true);
     this.errorMessage.set('');

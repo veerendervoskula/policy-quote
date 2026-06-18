@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RiskBand } from 'src/app/core/models/PolicyQuoteResponse';
+import { RiskBand } from 'src/app/core/utils/constants';
 
 /**
  * RiskBandBadgeComponent - Reusable risk band status badge.
@@ -81,8 +81,8 @@ export class RiskBandBadgeComponent {
   /**
    * Risk band classification from backend
    */
-  @Input() riskBand: RiskBand= 'STANDARD';
-
+  @Input({ required: true })
+  riskBand!: RiskBand;
   /**
    * Maps risk band to display label
    */
