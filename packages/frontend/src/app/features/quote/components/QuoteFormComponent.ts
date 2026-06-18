@@ -16,7 +16,7 @@ import { PropertyTypes } from 'src/app/core/utils/constants';
  * - age: Customer age (18-100)
  * - propertyType: House, Flat, or Bungalow
  * - dwellingValue: Property value in £
- * - postcode: UK postcode
+ * - postcode: postcode
  * - priorClaims: Number of prior claims
  * 
  * Uses Angular Signals for all UI state:
@@ -30,21 +30,6 @@ import { PropertyTypes } from 'src/app/core/utils/constants';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
   template: `
-  @if (errorMessage()) {
-    <div
-      class="banner banner-error"
-      role="alert">
-
-      <span>{{ errorMessage() }}</span>
-
-      <button
-        type="button"
-        (click)="dismissBanner()"
-        aria-label="Close notification">
-        ✕
-      </button>
-    </div>
-    }
     <form [formGroup]="quoteForm" (ngSubmit)="onSubmit()" class="quote-form card">
       <!-- Name -->
       <div class="form-group">
@@ -275,7 +260,7 @@ export class QuoteFormComponent {
       }
       const timeout = setTimeout(() => {
         this.errorMessage.set(null);
-      }, 20_000);
+      }, 200);
 
       return () => clearTimeout(timeout);
     });
@@ -311,10 +296,6 @@ export class QuoteFormComponent {
         },
         complete: () => this.isLoading.set(false)
       });
-  }
-
-  dismissBanner(): void {
-    this.errorMessage.set(null);
   }
 
   isFieldInvalid(fieldName: string): boolean {

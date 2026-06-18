@@ -2,7 +2,7 @@ import { Component, effect, ElementRef, Input, viewChild } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RiskBandBadgeComponent } from '../../../shared/components/RiskBandBadgeComponent';
 import { PolicyQuoteResponse } from '../../../core/models/PolicyQuoteResponse';
-import { renderChart } from './QuoteChartComponent';
+import { PremiumHistoryChartComponent } from './QuoteChartComponent';
 
 /**
  * QuoteResultComponent - Displays policy quote results.
@@ -19,7 +19,7 @@ import { renderChart } from './QuoteChartComponent';
 @Component({
   selector: 'app-quote-result',
   standalone: true,
-  imports: [CommonModule, RiskBandBadgeComponent],
+  imports: [CommonModule, RiskBandBadgeComponent, PremiumHistoryChartComponent],
   template: `
     @if (quoteResult) {
       <div class="quote-result card">
@@ -101,7 +101,12 @@ import { renderChart } from './QuoteChartComponent';
             </div>
           }
         </div>
-
+        <div>
+        <app-premium-history-chart
+              [annualPremium]="quoteResult!.annualPremium"
+              [riskScore]="quoteResult!.riskScore">
+            </app-premium-history-chart>
+        </div>
         <!-- Call to Action -->
         <div class="cta-section">
           <p class="cta-text">Ready to get covered? Next step: complete your full application.</p>
@@ -334,22 +339,4 @@ import { renderChart } from './QuoteChartComponent';
 })
 export class QuoteResultComponent {
   @Input() quoteResult!: PolicyQuoteResponse | null;
-
-  private chartInitialized = false;
-  premiumChartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('premiumChartCanvas');
-  chartEffect = effect(() => {
-
-    // run only when:
-    // 1. data exists
-    // 2. canvas is ready
-    if (this.quoteResult && this.premiumChartCanvas() && !this.chartInitialized) {
-
-      const canvasEl = this.premiumChartCanvas()!.nativeElement;
-
-      renderChart(canvasEl);
-
-      this.chartInitialized = true;
-    }
-  });
-
 }

@@ -27,6 +27,11 @@ import { PolicyQuoteResponse } from '../../core/models/PolicyQuoteResponse';
           <div class="quote-form-section">
             <h1>Home Insurance Quote</h1>
             <p class="subtitle">Get an instant premium estimate with our risk assessment</p>
+                @if (errorMessage()) {
+                  <div class="alert alert-error mt-lg">
+                    <strong>Error:</strong> {{ errorMessage() }}
+                  </div>
+                }
             <app-quote-form 
               (resultEmitted)="onQuoteResult($event)"
               (errorEmitted)="onError($event)">
@@ -39,11 +44,7 @@ import { PolicyQuoteResponse } from '../../core/models/PolicyQuoteResponse';
           </div>
         }
 
-        @if (errorMessage()) {
-          <div class="alert alert-error mt-lg">
-            <strong>Error:</strong> {{ errorMessage() }}
-          </div>
-        }
+    
       </div>
     </div>
   `,

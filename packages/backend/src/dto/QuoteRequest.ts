@@ -8,7 +8,7 @@ import { z } from 'zod';
  * - age: Customer age (18-100)
  * - propertyType: Type of dwelling (House, Flat, Bungalow)
  * - dwellingValue: Total property value in £ (50,000 - 2,000,000)
- * - postcode: UK postcode (format: alphanumeric, space allowed)
+ * - postcode: postcode (format: alphanumeric, space allowed)
  * - priorClaims: Number of claims in past 5 years (0-5+)
  */
 export const QuoteRequestSchema = z.object({
@@ -20,9 +20,7 @@ export const QuoteRequestSchema = z.object({
     .int('Age must be an integer')
     .min(18, 'Must be at least 18 years old')
     .max(100, 'Age must be 100 or less'),
-  propertyType: z.enum(['House', 'Flat', 'Bungalow'], {
-    errorMap: () => ({ message: 'Property type must be House, Flat, or Bungalow' })
-  }),
+  propertyType: z.enum([ 'HOUSE', 'FLAT', 'BUNGALOW']),
   dwellingValue: z.number()
     .positive('Dwelling value must be positive')
     .min(50000, 'Dwelling value must be at least £50,000')

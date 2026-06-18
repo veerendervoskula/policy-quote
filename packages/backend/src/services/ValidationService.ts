@@ -5,13 +5,13 @@ import { ValidationError } from '../types/errors.js';
  * ValidationService - Handles all request validation logic.
  * 
  * Responsibilities:
- * - Validate postcode format (simple UK format)
+ * - Validate postcode format (simple  format)
  * - Parse and validate incoming quote request against Zod schema
  * - Return typed QuoteRequest or throw ValidationError
  */
 export class ValidationService {
   /**
-   * Validates UK postcode format.
+   * Validates postcode format.
    * Simple check: 6-8 alphanumeric characters + optional space.
    * 
    * @param postcode - Raw postcode string

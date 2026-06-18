@@ -104,7 +104,7 @@ export class PremiumCalculationService {
     }
 
     if (factors.propertyScore > 0) {
-      if (request.propertyType === 'Flat') {
+      if (request.propertyType === 'FLAT') {
         insights.push('Flat properties have shared-risk exposure.');
       }
       if (request.dwellingValue > 750000) {

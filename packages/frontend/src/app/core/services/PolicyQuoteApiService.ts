@@ -32,7 +32,6 @@ export class PolicyQuoteApiService {
   ): Observable<PolicyQuoteResponse> {
     const url = `${environment.apiBaseUrl}${environment.apiEndpoints.quote}`;
     return this.http.post<PolicyQuoteResponse>(url, quoteData).pipe(
-      retry(2),
       map((response: PolicyQuoteResponse) => this.transformResponse(response)),
       catchError(this.handleError)
     );
@@ -70,9 +69,9 @@ export class PolicyQuoteApiService {
     let message = 'Unexpected error';
 
     if (error.status === 0) {
-      message = 'Network error – check your connection';
+      message = 'Network error check your connection';
     } else if (error.status >= 500) {
-      message = 'Server error – try again later';
+      message = 'Server error try again later';
     } else if (error.error?.message) {
       message = error.error.message;
     }
