@@ -19,7 +19,7 @@ Full-stack minimal home insurance quoting tool demonstrating Angular 17 + Node.j
 - Accessible UI (WCAG)
 
 ## Run Locally
-npm start to kick start frontend and backend
+`npm start` to kick start frontend and backend
 
 
 ### Backend
