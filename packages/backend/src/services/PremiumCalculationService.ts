@@ -1,6 +1,7 @@
-import { QuoteResponse } from '../dto/QuoteResponse.js';
-import { RiskScoringService } from './RiskScoringService.js';
-import { QuoteRequest } from '../dto/QuoteRequest.js';
+import { QuoteResponse } from '../dto/QuoteResponse';
+import { RiskScoringService } from './RiskScoringService';
+import { QuoteRequest } from '../dto/QuoteRequest';
+import { RISK_POINTS, RiskBand } from '../utils/constants';
 
 /**
  * PremiumCalculationService - Determines insurance premiums based on risk and property value.
@@ -23,7 +24,7 @@ export class PremiumCalculationService {
   private static readonly BASE_RATE = 0.003; // 0.3%
 
   // Risk multipliers by band (applied to base premium)
-  private static readonly RISK_MULTIPLIERS: Record<string, number> = {
+  private static readonly RISK_MULTIPLIERS: Record<RiskBand, number> = {
     STANDARD: 0.95,      // Preferred risk: 5% discount
     ELEVATED: 1.25,      // Moderate loading: 25% above base
     HIGH_RISK: 1.55      // Significant loading: 55% above base
@@ -41,7 +42,7 @@ export class PremiumCalculationService {
    */
   public static calculatePremium(
     dwellingValue: number,
-    riskBand: 'STANDARD' | 'ELEVATED' | 'HIGH_RISK'
+    riskBand: RiskBand,
   ): { annualPremium: number; monthlyPremium: number; baseAnnualRate: number; riskMultiplier: number } {
     // Calculate base premium (property value × base rate)
     const baseAnnualRate = dwellingValue * this.BASE_RATE;
@@ -71,16 +72,16 @@ export class PremiumCalculationService {
    * @returns Plain-text risk summary
    */
   public static generateRiskSummary(
-    riskBand: 'STANDARD' | 'ELEVATED' | 'HIGH_RISK',
+    riskBand: RiskBand,
     factors: { ageScore: number; claimsScore: number; propertyScore: number },
     request: QuoteRequest
   ): string {
     const lines: string[] = [];
 
     // Base summary by band
-    if (riskBand === 'STANDARD') {
+    if (riskBand === RiskBand.STANDARD) {
       lines.push(`Your profile qualifies for our Standard risk category.`);
-    } else if (riskBand === 'ELEVATED') {
+    } else if (riskBand === RiskBand.ELEVATED) {
       lines.push(`Your profile is classified as Elevated risk.`);
     } else {
       lines.push(`Your profile is classified as High Risk and requires special underwriting.`);
@@ -107,7 +108,7 @@ export class PremiumCalculationService {
       if (request.propertyType === 'FLAT') {
         insights.push('Flat properties have shared-risk exposure.');
       }
-      if (request.dwellingValue > 750000) {
+      if (request.dwellingValue > RISK_POINTS.HIGH_VALUE_THRESHOLD) {
         insights.push('Your high-value property requires enhanced coverage consideration.');
       }
     }

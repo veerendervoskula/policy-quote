@@ -1,5 +1,6 @@
-import { QuoteRequestSchema, QuoteRequest } from '../dto/QuoteRequest.js';
-import { ValidationError } from '../types/errors.js';
+import { ZodError } from 'zod/v3/external.cjs';
+import { QuoteRequestSchema, QuoteRequest } from '../dto/QuoteRequest';
+import { ValidationError } from '../types/errors';
 
 /**
  * ValidationService - Handles all request validation logic.
@@ -10,24 +11,6 @@ import { ValidationError } from '../types/errors.js';
  * - Return typed QuoteRequest or throw ValidationError
  */
 export class ValidationService {
-  /**
-   * Validates postcode format.
-   * Simple check: 6-8 alphanumeric characters + optional space.
-   * 
-   * @param postcode - Raw postcode string
-   * @returns true if valid format, false otherwise
-   * @example
-   * validatePostcode('SW1A 1AA') // true
-   * validatePostcode('M1 1AE')   // true
-   * validatePostcode('invalid')  // false
-   */
-  public static validatePostcode(postcode: string): boolean {
-    if (!postcode || typeof postcode !== 'string') {
-      return false;
-    }
-   return true
-  }
-
   /**
    * Validates and parses raw quote request data.
    * 
@@ -43,7 +26,7 @@ export class ValidationService {
       // Extract field-level errors from Zod validation
       const details: Record<string, string> = {};
       if (error instanceof Error && 'errors' in error) {
-        const zodErrors = (error as any).errors;
+        const zodErrors = (error as ZodError).errors;
         for (const err of zodErrors) {
           const path = err.path.join('.');
           details[path] = err.message;

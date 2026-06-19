@@ -1,4 +1,5 @@
-import { QuoteRequest } from '../dto/QuoteRequest.js';
+import { QuoteRequest } from '../dto/QuoteRequest';
+import { PropertyTypes, RISK_POINTS, RiskBand } from '../utils/constants';
 
 /**
  * RiskScoringService - Implements deterministic underwriting risk assessment.
@@ -29,7 +30,7 @@ export class RiskScoringService {
    */
   public static calculateAgeScore(age: number): number {
     if (age < 25 || age > 75) {
-      return 20;
+      return RISK_POINTS.AGE_HIGH_RISK;
     }
     return 0;
   }
@@ -50,10 +51,10 @@ export class RiskScoringService {
       return 0;
     }
     if (priorClaims <= 2) {
-      return priorClaims * 15;
+      return priorClaims * RISK_POINTS.CLAIMS_LOW;
     }
     // 3+ claims: 30 points per claim
-    return priorClaims * 30;
+    return priorClaims * RISK_POINTS.CLAIMS_HIGH;
   }
 
   /**
@@ -71,17 +72,17 @@ export class RiskScoringService {
    * @param dwellingValue - Total property value in £
    * @returns Risk points (0, 10, 25, or 35)
    */
-  public static calculatePropertyScore(propertyType: string, dwellingValue: number): number {
+  public static calculatePropertyScore(propertyType: PropertyTypes, dwellingValue: number): number {
     let score = 0;
 
     // Flat penalty
     if (propertyType.toLowerCase() === 'flat') {
-      score += 10;
+      score += RISK_POINTS.FLAT_PROPERTY;
     }
 
     // High-value property penalty
-    if (dwellingValue > 750000) {
-      score += 25;
+    if (dwellingValue > RISK_POINTS.HIGH_VALUE_THRESHOLD) {
+      score += RISK_POINTS.HIGH_VALUE_PROPERTY;
     }
 
     return score;
@@ -104,16 +105,16 @@ export class RiskScoringService {
     ageScore: number,
     claimsScore: number,
     propertyScore: number
-  ): { score: number; riskBand: 'STANDARD' | 'ELEVATED' | 'HIGH_RISK' } {
+  ): { score: number; riskBand: RiskBand } {
     const totalScore = ageScore + claimsScore + propertyScore;
 
-    let riskBand: 'STANDARD' | 'ELEVATED' | 'HIGH_RISK';
+    let riskBand: RiskBand;
     if (totalScore <= 25) {
-      riskBand = 'STANDARD';
+      riskBand = RiskBand.STANDARD;
     } else if (totalScore <= 60) {
-      riskBand = 'ELEVATED';
+      riskBand = RiskBand.ELEVATED;
     } else {
-      riskBand = 'HIGH_RISK';
+      riskBand = RiskBand.HIGH_RISK;
     }
 
     return { score: totalScore, riskBand };
@@ -130,7 +131,7 @@ export class RiskScoringService {
     claimsScore: number;
     propertyScore: number;
     totalScore: number;
-    riskBand: 'STANDARD' | 'ELEVATED' | 'HIGH_RISK';
+    riskBand: RiskBand;
   } {
     const ageScore = this.calculateAgeScore(request.age);
     const claimsScore = this.calculateClaimsScore(request.priorClaims);

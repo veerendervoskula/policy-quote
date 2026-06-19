@@ -1,20 +1,26 @@
-import express from 'express';
+import { Router } from 'express';
 import { handler } from '../lambda';
+import { asyncHandler } from '../middleware/errorHandler';
+import type {
+  APIGatewayProxyEvent,
+  Context
+} from 'aws-lambda';
 
-const app = express();
+export const quoteRoutes = Router();
 
-app.use(express.json());
-
-app.post(
+quoteRoutes.post(
   '/policy/quote',
-  async (req, res) => {
-
+  asyncHandler(async (req, res) => {
     const result =
       await handler(
         {
-          body: JSON.stringify(req.body)
-        } as any,
-        {} as any
+          body: JSON.stringify(req.body),
+          httpMethod: req.method,
+          path: req.path,
+          headers: req.headers,
+          queryStringParameters: req.query
+        } as APIGatewayProxyEvent,
+        {} as Context
       );
 
     res
@@ -22,11 +28,5 @@ app.post(
       .json(
         JSON.parse(result.body)
       );
-  }
+  })
 );
-
-app.listen(3000, () => {
-  console.log(
-    'API listening on port 3000'
-  );
-});

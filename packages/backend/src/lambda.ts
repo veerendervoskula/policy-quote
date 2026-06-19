@@ -1,24 +1,54 @@
 import type {
   APIGatewayProxyEvent,
-  APIGatewayProxyResult
+  APIGatewayProxyResult,
+  Context
 } from 'aws-lambda';
 
 import { QuoteRequestSchema } from './dto/QuoteRequest';
 import { RiskScoringService } from './services/RiskScoringService';
 import { logger } from './utils/logger';
 import { PremiumCalculationService } from './services/PremiumCalculationService';
+import { RISK_POINTS } from './utils/constants';
 
 export async function handler(
-event: APIGatewayProxyEvent, p0: any): Promise<APIGatewayProxyResult> {
+  event: APIGatewayProxyEvent,
+  context: Context
+): Promise<APIGatewayProxyResult> {
 
   try {
 
-    const payload = JSON.parse(
-      event.body ?? '{}'
-    );
+    // Extract data from request
+    const method = event.httpMethod;
+    const path = event.path;
+    const headers = event.headers;
+    const query = event.queryStringParameters;
+    let body: unknown;
 
-    const validated =
-      QuoteRequestSchema.safeParse(payload);
+    try {
+      body = JSON.parse(event.body ?? '{}');
+    } catch {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          code: 'VALIDATION_ERROR',
+          message: 'Request body is not valid JSON',
+          details:
+            { body: ['Request body is not valid JSON'] }
+        })
+      };
+    }
+
+    logger.info("Incoming request:", {
+      method,
+      path,
+      query,
+      body,
+    });
+
+    const validated = QuoteRequestSchema.safeParse(body);
 
     if (!validated.success) {
 
@@ -43,10 +73,10 @@ event: APIGatewayProxyEvent, p0: any): Promise<APIGatewayProxyResult> {
         request
       );
 
-    const premium =
-      PremiumCalculationService.calculatePremium(
-        request.dwellingValue,
-        riskAssessment.riskBand
+    const quoteResponse =
+      PremiumCalculationService.generateQuoteResponse(
+        request,
+        riskAssessment
       );
 
     return {
@@ -54,37 +84,11 @@ event: APIGatewayProxyEvent, p0: any): Promise<APIGatewayProxyResult> {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        annualPremium: premium.annualPremium,
-        monthlyPremium: premium.monthlyPremium,
-        riskScore: riskAssessment.totalScore,
-
-        riskBand:
-          riskAssessment.riskBand,
-
-        riskBreakdown: {
-          ageScore:
-            riskAssessment.ageScore,
-          claimsScore:
-            riskAssessment.claimsScore,
-          propertyScore:
-            riskAssessment.propertyScore
-        },
-
-        coverageDetails: {
-          buildingCover:
-            request.dwellingValue,
-          contentsCover: 75000,
-          accidentalDamage: true
-        }
-      })
+      body: JSON.stringify(quoteResponse)
     };
 
   } catch (error) {
-
-    logger.error(
-      'Unexpected error',
-      error
+    logger.error('Unexpected error', error
     );
 
     return {

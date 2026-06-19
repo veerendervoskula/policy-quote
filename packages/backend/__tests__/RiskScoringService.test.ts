@@ -1,4 +1,5 @@
-import { RiskScoringService } from '../src/services/RiskScoringService.js';
+import { RiskScoringService } from '../src/services/RiskScoringService';
+import { PropertyTypes } from "../src/utils/constants";
 
 describe('RiskScoringService', () => {
   describe('calculateAgeScore', () => {
@@ -38,20 +39,20 @@ describe('RiskScoringService', () => {
 
   describe('calculatePropertyScore', () => {
     it('should return 0 points for house under £750k', () => {
-      expect(RiskScoringService.calculatePropertyScore('House', 500000)).toBe(0);
+      expect(RiskScoringService.calculatePropertyScore(PropertyTypes.HOUSE, 500000)).toBe(0);
     });
 
     it('should return 10 points for flat (regardless of value)', () => {
-      expect(RiskScoringService.calculatePropertyScore('Flat', 300000)).toBe(10);
+      expect(RiskScoringService.calculatePropertyScore(PropertyTypes.FLAT, 300000)).toBe(10);
     });
 
     it('should return 25 points for property over £750k', () => {
-      expect(RiskScoringService.calculatePropertyScore('House', 800000)).toBe(25);
-      expect(RiskScoringService.calculatePropertyScore('Bungalow', 1000000)).toBe(25);
+      expect(RiskScoringService.calculatePropertyScore(PropertyTypes.HOUSE, 800000)).toBe(25);
+      expect(RiskScoringService.calculatePropertyScore(PropertyTypes.BUNGALOW, 1000000)).toBe(25);
     });
 
     it('should return 35 points for flat over £750k (combined penalties)', () => {
-      expect(RiskScoringService.calculatePropertyScore('Flat', 800000)).toBe(35);
+      expect(RiskScoringService.calculatePropertyScore(PropertyTypes.FLAT, 800000)).toBe(35);
     });
   });
 
@@ -92,9 +93,9 @@ describe('RiskScoringService', () => {
       const request: typeof RiskScoringService.assessRisk extends (arg: infer T) => any ? T : never = {
         name: 'John Doe',
         age: 30,
-        propertyType: 'House' as const,
+        propertyType: PropertyTypes.HOUSE,
         dwellingValue: 300000,
-        postcode: 'M1 1AE',
+        postcode: 'W89X1YZ',
         priorClaims: 0
       };
       const assessment = RiskScoringService.assessRisk(request);
@@ -110,9 +111,9 @@ describe('RiskScoringService', () => {
       const request = {
         name: 'Jane Smith',
         age: 24,
-        propertyType: 'Flat' as const,
+        propertyType: PropertyTypes.FLAT,
         dwellingValue: 400000,
-        postcode: 'SW1A 1AA',
+        postcode: 'W89X1YZ',
         priorClaims: 1
       };
       const assessment = RiskScoringService.assessRisk(request);
@@ -128,9 +129,9 @@ describe('RiskScoringService', () => {
       const request = {
         name: 'Robert Green',
         age: 78,
-        propertyType: 'Flat' as const,
+        propertyType: PropertyTypes.FLAT,
         dwellingValue: 900000,
-        postcode: 'EC1A 1BB',
+        postcode: 'W89X1YZ',
         priorClaims: 2
       };
       const assessment = RiskScoringService.assessRisk(request);

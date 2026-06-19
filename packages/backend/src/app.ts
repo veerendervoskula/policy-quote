@@ -1,8 +1,8 @@
 import express, { Express } from 'express';
-import { errorHandler } from './middleware/errorHandler.js';
-import { configureSecurity } from './middleware/security.js';
-import { requestLogger } from './utils/logger.js';
-import { quoteRoutes } from './routes/quote.routes.js';
+import { errorHandler } from './middleware/errorHandler';
+import { configureSecurity } from './middleware/security';
+import { requestLogger } from './utils/logger';
+import { quoteRoutes } from './routes/quote.routes';
 
 /**
  * Creates and configures an Express application instance.
@@ -51,6 +51,5 @@ export function createApp(): Express {
 
   // Centralized error handler (must be last)
   app.use(errorHandler);
-
   return app;
 }

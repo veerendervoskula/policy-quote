@@ -1,35 +1,7 @@
-import { ValidationService } from '../src/services/ValidationService.js';
-import { ValidationError } from '../src/types/errors.js';
+import { ValidationService } from '../src/services/ValidationService';
+import { ValidationError } from '../src/types/errors';
 
 describe('ValidationService', () => {
-  describe('validatePostcode', () => {
-    it('should accept valid UK postcodes', () => {
-      expect(ValidationService.validatePostcode('SW1A 1AA')).toBe(true);
-      expect(ValidationService.validatePostcode('M1 1AE')).toBe(true);
-      expect(ValidationService.validatePostcode('B33 8TH')).toBe(true);
-      expect(ValidationService.validatePostcode('EC1A 1BB')).toBe(true);
-      expect(ValidationService.validatePostcode('W1A 0AX')).toBe(true);
-    });
-
-    it('should accept postcodes without space', () => {
-      expect(ValidationService.validatePostcode('SW1A1AA')).toBe(true);
-      expect(ValidationService.validatePostcode('M11AE')).toBe(true);
-    });
-
-    it('should reject invalid postcodes', () => {
-      expect(ValidationService.validatePostcode('invalid')).toBe(false);
-      expect(ValidationService.validatePostcode('12345')).toBe(false);
-      expect(ValidationService.validatePostcode('SW1A 1A')).toBe(false); // too short
-      expect(ValidationService.validatePostcode('SW1A 1AAA')).toBe(false); // too long
-      expect(ValidationService.validatePostcode('111 111')).toBe(false); // only numbers
-    });
-
-    it('should handle edge cases', () => {
-      expect(ValidationService.validatePostcode('')).toBe(false);
-      expect(ValidationService.validatePostcode('   ')).toBe(false);
-    });
-  });
-
   describe('validateRequest', () => {
     it('should validate a complete valid request', () => {
       const data = {

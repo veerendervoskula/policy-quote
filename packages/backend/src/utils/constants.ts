@@ -1,0 +1,20 @@
+export enum RiskBand {
+  STANDARD = 'STANDARD',
+  ELEVATED = 'ELEVATED',
+  HIGH_RISK = 'HIGH_RISK'
+}
+
+export const RISK_POINTS = {
+  AGE_HIGH_RISK: 20,
+  CLAIMS_LOW: 15,
+  CLAIMS_HIGH: 30,
+  FLAT_PROPERTY: 10,
+  HIGH_VALUE_PROPERTY: 25,
+  HIGH_VALUE_THRESHOLD: 750000
+} as const;
+
+export enum PropertyTypes {
+  HOUSE = 'HOUSE',
+  FLAT = 'FLAT',
+  BUNGALOW = 'BUNGALOW'
+}
